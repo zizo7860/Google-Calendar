@@ -15,22 +15,22 @@ const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 
 const app = express();
 
-app.get('/', async (req, res) => {
+const { google } = require('googleapis');
+
+module.exports = async (req, res) => {
   try {
-    const auth = await authorize();
-    const events = await listEvents(auth);
-    res.send(events);
+    // Your code for authentication and event retrieval
+    const authClient = new google.auth.OAuth2(...);
+    const authUrl = authClient.generateAuthUrl(...);
+    // Rest of your code for authentication and event retrieval
+
+    // Sending the events as the response
+    res.status(200).json(events);
   } catch (error) {
     console.error('Error retrieving events:', error);
-    res.status(500).send('Error retrieving events');
+    res.status(500).send('An error occurred while retrieving events');
   }
-});
-
-// Set up server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+};
 
 /**
  * Reads previously authorized credentials from the save file.

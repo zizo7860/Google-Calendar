@@ -2,9 +2,9 @@ const { google } = require('googleapis');
 
 // Create an OAuth2 client
 const authClient = new google.auth.OAuth2(
- 1060639358041-qgs6mm6on5485nl3u7h75m7g0h06ekj2.apps.googleusercontent.com,
- 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,
- https://nodejs-serverless-function-express3.vercel.app
+ '1060639358041-qgs6mm6on5485nl3u7h75m7g0h06ekj2.apps.googleusercontent.com',
+ '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',
+ 'https://nodejs-serverless-function-express3.vercel.app'
 );
 
 // Authorize the client

@@ -19,7 +19,27 @@ app.get('/', async (req, res) => {
   try {
     const auth = await authorize();
     const events = await listEvents(auth);
-    res.send(events);
+
+    const eventList = events.map((event) => {
+      const start = event.start.dateTime || event.start.date;
+      return `${start} - ${event.summary}`;
+    });
+
+    const html = `
+      <html>
+        <head>
+          <title>Google Calendar Events</title>
+        </head>
+        <body>
+          <h1>Upcoming Events:</h1>
+          <ul>
+            ${eventList.map((event) => `<li>${event}</li>`).join('')}
+          </ul>
+        </body>
+      </html>
+    `;
+
+    res.send(html);
   } catch (error) {
     console.error('Error retrieving events:', error);
     res.status(500).send('Error retrieving events');

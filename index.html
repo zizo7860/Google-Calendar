@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Google Calendar Events</title>
+  </head>
+  <body>
+    <h1>Upcoming Events</h1>
+    <ul id="events-list"></ul>
+
+    <script>
+      // Add a script to fetch and display the events
+      fetchEvents();
+
+      async function fetchEvents() {
+        const response = await fetch('/events');
+        const events = await response.json();
+        const eventsList = document.getElementById('events-list');
+
+        if (events.length) {
+          events.forEach((event) => {
+            const start = event.start.dateTime || event.start.date;
+            const summary = event.summary;
+            const listItem = document.createElement('li');
+            listItem.textContent = `${start} - ${summary}`;
+            eventsList.appendChild(listItem);
+          });
+        } else {
+          const noEventsItem = document.createElement('li');
+          noEventsItem.textContent = 'No upcoming events found.';
+          eventsList.appendChild(noEventsItem);
+        }
+      }
+    </script>
+  </body>
+</html>

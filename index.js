@@ -1,8 +1,9 @@
 const fs = require('fs').promises;
 const path = require('path');
 const process = require('process');
-const {authenticate} = require('@google-cloud/local-auth');
-const {google} = require('googleapis');
+const { authenticate } = require('@google-cloud/local-auth');
+const { google } = require('googleapis');
+const express = require('express');
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
@@ -11,6 +12,25 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 // time.
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
+
+const app = express();
+
+app.get('/', async (req, res) => {
+  try {
+    const auth = await authorize();
+    const events = await listEvents(auth);
+    res.send(events);
+  } catch (error) {
+    console.error('Error retrieving events:', error);
+    res.status(500).send('Error retrieving events');
+  }
+});
+
+// Set up server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
 /**
  * Reads previously authorized credentials from the save file.
@@ -47,8 +67,7 @@ async function saveCredentials(client) {
 }
 
 /**
- * Load or request or authorization to call APIs.
- *
+ * Load or request authorization to call APIs.
  */
 async function authorize() {
   let client = await loadSavedCredentialsIfExist();
@@ -68,9 +87,10 @@ async function authorize() {
 /**
  * Lists the next 10 events on the user's primary calendar.
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
+ * @return {Promise<Array<Object>>} The list of upcoming events.
  */
 async function listEvents(auth) {
-  const calendar = google.calendar({version: 'v3', auth});
+  const calendar = google.calendar({ version: 'v3', auth });
   const res = await calendar.events.list({
     calendarId: 'primary',
     timeMin: new Date().toISOString(),
@@ -79,15 +99,7 @@ async function listEvents(auth) {
     orderBy: 'startTime',
   });
   const events = res.data.items;
-  if (!events || events.length === 0) {
-    console.log('No upcoming events found.');
-    return;
-  }
-  console.log('Upcoming 10 events:');
-  events.map((event, i) => {
-    const start = event.start.dateTime || event.start.date;
-    console.log(`${start} - ${event.summary}`);
-  });
+  return events || [];
 }
 
-authorize().then(listEvents).catch(console.error);
+module.exports = app;
